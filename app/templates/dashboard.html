@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Real Estate Automation OS — Demo</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; background: #f8f9fa; }
+        h1 { color: #1a365d; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        button, input, select { padding: 0.5rem; margin: 0.3rem 0; }
+        button { background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2c5282; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+        .score-high { color: #276749; font-weight: bold; }
+        .score-med { color: #c05621; }
+        pre { background: #edf2f7; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Real Estate Automation OS</h1>
+    <p>Level 1 Demo — Agency Registration + Opportunity Assessment (21 modules)</p>
+
+    <div class="card">
+        <h2>1. Register Agency</h2>
+        <form id="agencyForm">
+            <input type="text" id="name" placeholder="Agency name" required><br>
+            <input type="text" id="website" placeholder="Website (optional)"><br>
+            <input type="text" id="location" value="Alicante, Spain"><br>
+            <input type="number" id="team_size" value="4" min="1"><br>
+            <input type="text" id="specialization" value="Residential coastal"><br>
+            <button type="submit">Create Agency</button>
+        </form>
+        <div id="agencyResult"></div>
+    </div>
+
+    <div class="card">
+        <h2>2. Run Operational Audit & Score Modules</h2>
+        <form id="auditForm">
+            <input type="text" id="agency_id" placeholder="Agency ID from step 1" required style="width: 300px;"><br>
+            <input type="text" id="channels" value="WhatsApp, Phone, Idealista" style="width: 400px;"><br>
+            <input type="text" id="pain" value="Slow response to leads, manual follow-ups" style="width: 400px;"><br>
+            <input type="text" id="crm" value="Spreadsheets / none"><br>
+            <button type="submit">Assess Opportunities</button>
+        </form>
+        <div id="auditResult"></div>
+    </div>
+
+    <div class="card">
+        <h2>Registered Agencies</h2>
+        <div id="agenciesList">Loading...</div>
+    </div>
+
+    <script>
+        document.getElementById('agencyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                website: document.getElementById('website').value || null,
+                location: document.getElementById('location').value,
+                team_size: parseInt(document.getElementById('team_size').value),
+                specialization: document.getElementById('specialization').value
+            };
+            const res = await fetch('/api/agencies', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            const json = await res.json();
+            document.getElementById('agencyResult').innerHTML = `<pre>${JSON.stringify(json, null, 2)}</pre>`;
+            document.getElementById('agency_id').value = json.id;
+            loadAgencies();
+        });
+
+        document.getElementById('auditForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                agency_id: document.getElementById('agency_id').value,
+                channels: document.getElementById('channels').value,
+                pain: document.getElementById('pain').value,
+                existing_crm: document.getElementById('crm').value
+            };
+            const res = await fetch('/api/audits', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            const json = await res.json();
+            let html = `<h3>Top Opportunities</h3><table><tr><th>Module</th><th>Score</th><th>Priority</th><th>Impact</th></tr>`;
+            (json.top_opportunities || []).forEach(m => {
+                const cls = m.score >= 80 ? 'score-high' : m.score >= 60 ? 'score-med' : '';
+                html += `<tr><td>${m.module_id} — ${m.name}</td><td class="${cls}">${m.score}</td><td>${m.priority}</td><td>${m.revenue_impact}</td></tr>`;
+            });
+            html += `</table><pre>${JSON.stringify(json, null, 2)}</pre>`;
+            document.getElementById('auditResult').innerHTML = html;
+        });
+
+        async function loadAgencies() {
+            // Simple refresh hint
+            document.getElementById('agenciesList').innerHTML = 'Use the form above. Refresh page to see persisted (in-memory) agencies after restarts will clear.';
+        }
+        loadAgencies();
+    </script>
+</body>
+</html>
