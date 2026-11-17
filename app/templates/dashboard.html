@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Real Estate Automation OS — Demo</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; background: #f8f9fa; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+        button { background: #2b6cb0; color: white; border: none; padding: .5rem 1rem; border-radius: 4px; cursor: pointer; }
+        input { padding: .4rem; margin: .3rem 0; width: 100%; max-width: 400px; }
+        pre { background: #edf2f7; padding: 1rem; border-radius: 4px; white-space: pre-wrap; }
+        .module { margin: .4rem 0; }
+    </style>
+</head>
+<body>
+    <h1>Real Estate Automation OS</h1>
+    <p>Postgres persistence + approve modules + roadmap</p>
+
+    <div class="card">
+        <h2>1. Register Agency</h2>
+        <input id="name" placeholder="Agency name" value="Costa Blanca Homes"><br>
+        <button onclick="createAgency()">Create</button>
+        <pre id="agencyResult"></pre>
+    </div>
+
+    <div class="card">
+        <h2>2. Run Audit</h2>
+        <input id="agencyId" placeholder="Agency ID"><br>
+        <input id="channels" value="WhatsApp, Phone, Idealista"><br>
+        <input id="pain" value="Slow response to leads, manual follow-ups"><br>
+        <button onclick="runAudit()">Assess</button>
+        <div id="scores"></div>
+        <pre id="roadmap"></pre>
+    </div>
+
+    <div class="card">
+        <h2>3. Approve selected modules</h2>
+        <button onclick="approve()">Approve top modules</button>
+        <pre id="approveResult"></pre>
+    </div>
+
+    <script>
+        let currentAudit = null;
+        let currentAgency = null;
+
+        async function createAgency() {
+            const res = await fetch('/api/agencies', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: document.getElementById('name').value})
+            });
+            const data = await res.json();
+            currentAgency = data.id;
+            document.getElementById('agencyId').value = data.id;
+            document.getElementById('agencyResult').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function runAudit() {
+            const res = await fetch('/api/audits', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    agency_id: document.getElementById('agencyId').value,
+                    channels: document.getElementById('channels').value,
+                    pain: document.getElementById('pain').value
+                })
+            });
+            const data = await res.json();
+            currentAudit = data.audit_id;
+            let html = '<h3>Top opportunities</h3>';
+            data.top_opportunities.forEach(m => {
+                html += `<div class="module"><input type="checkbox" value="${m.module_id}" checked> ${m.module_id} — ${m.name} (${m.score})</div>`;
+            });
+            document.getElementById('scores').innerHTML = html;
+            document.getElementById('roadmap').textContent = data.roadmap;
+        }
+
+        async function approve() {
+            const ids = [...document.querySelectorAll('#scores input:checked')].map(el => el.value);
+            const res = await fetch('/api/approve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    agency_id: currentAgency,
+                    audit_id: currentAudit,
+                    module_ids: ids
+                })
+            });
+            document.getElementById('approveResult').textContent = JSON.stringify(await res.json(), null, 2);
+        }
+    </script>
+</body>
+</html>
