@@ -1,0 +1,48 @@
+{
+  "name": "REAOS - Approved Modules Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "reaos-approved",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const body = $input.item.json.body || $input.item.json;\nreturn [{\n  json: {\n    agency_id: body.agency_id,\n    audit_id: body.audit_id,\n    modules: body.modules || [],\n    received_at: new Date().toISOString(),\n    message: 'Modules approved in REAOS — ready for workflow'\n  }\n}];"
+      },
+      "id": "process",
+      "name": "Process Payload",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "content": "## REAOS Integration\nReceives approved modules from the demo app.\nExtend this workflow to call WhatsApp, CRM, or calendar.",
+        "height": 200,
+        "width": 300
+      },
+      "id": "note",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [200, 80]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Process Payload", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}
