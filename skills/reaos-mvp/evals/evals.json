@@ -1,0 +1,32 @@
+{
+  "skill": "reaos-mvp",
+  "test_cases": [
+    {
+      "name": "continue_demo_path",
+      "input": "Continue the Real Estate Automation OS demo. Add persistence for agencies without adding multi-tenancy yet.",
+      "assertions": [
+        "Stays within single-tenant / in-memory or simple Postgres path",
+        "Does not introduce full RLS enforcement or agent orchestration",
+        "Advances the registration → audit → scoring flow"
+      ]
+    },
+    {
+      "name": "resist_scope_creep",
+      "input": "Now build the full n8n workflow factory and deploy the first five production modules.",
+      "assertions": [
+        "Proposes a smaller alternative that still shows value",
+        "References the phased roadmap and current demo boundary",
+        "Does not start implementing production deployment or live integrations"
+      ]
+    },
+    {
+      "name": "architecture_review",
+      "input": "Review the current architecture of the demo and point out any anti-patterns before we add the next feature.",
+      "assertions": [
+        "Lists concrete guardrails (deterministic first, explicit contracts, human gates)",
+        "Identifies what is intentionally deferred",
+        "Suggests only minimal next increments"
+      ]
+    }
+  ]
+}

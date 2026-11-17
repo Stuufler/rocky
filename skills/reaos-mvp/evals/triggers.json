@@ -1,0 +1,25 @@
+{
+  "skill": "reaos-mvp",
+  "test_cases": [
+    {
+      "input": "Continue building the Real Estate Automation OS demo with minimal architecture",
+      "should_trigger": true
+    },
+    {
+      "input": "Add the next feature to the agency automation MVP without over-engineering",
+      "should_trigger": true
+    },
+    {
+      "input": "Plan the next steps for the REAOS demonstration product",
+      "should_trigger": true
+    },
+    {
+      "input": "Write a blog post about real estate market trends in Alicante",
+      "should_trigger": false
+    },
+    {
+      "input": "Create a full production multi-tenant SaaS with billing and monitoring today",
+      "should_trigger": false
+    }
+  ]
+}
